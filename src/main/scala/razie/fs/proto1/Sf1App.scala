@@ -3,7 +3,7 @@ package razie.fs.proto1
 object Sf1App extends Application {
   import DefaultShell._
   import Flags._
-  
+    
   log ("pwd", pwd)
   
   log ("ls", ls)
@@ -15,4 +15,8 @@ object Sf1App extends Application {
   "dir2".rm	;      log (P("dir2").exists)
   "dir2".rm (r)	;  log (P("dir2").exists)
 
+  // just having fun now
+  val > = DefaultShell
+  >mkdir "dir1"  ;  log (>exists "dir1")
+  rmdir ("dir1")  ;  log (exists ("dir1"))
 }

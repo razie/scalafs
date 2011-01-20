@@ -139,6 +139,11 @@ trait Shell {
   
   def iecho (expr:String) : CF[Content] = echo (expr)
   def echo (expr:String) : CF[Content] // TODO expr 
+  
+  def mkdir  (p:P) = p.mkdir
+  def rmdir  (p:P) = p.rmdir
+  def rm     (p:P) = p.rm   
+  def exists (p:P) = p.exists
 }
 
 object DefaultShell extends Shell {

@@ -1,4 +1,4 @@
-package razie.fs.proto1
+package razie.fs.proto2
 
 // identifies one or more files or paths
 trait FQ {
@@ -56,7 +56,7 @@ trait FP {
   def ls : CF[List[P]] = ls (".*")
   def ls (pat:String, flags:LsFlag*) : CF[List[P]]
 
-  def exists : CF[Boolean]
+  def exists : Boolean
   //def find (pat:String = "") : CF[List[P]]
 }
 
@@ -73,8 +73,8 @@ class JF (val name:String) extends P {
   
   val f = new java.io.File (name)
   
-  override def mkdir  : CF[Boolean] = new CmdMkdir  (FQ(this))
-  override def mkdirs : CF[Boolean] = new CmdMkdirs (FQ(this))
+  override def mkdir  : CF[Boolean] = new CDO (new CmdMkdir  (FQ(this)))
+  override def mkdirs : CF[Boolean] = new CDO (new CmdMkdirs (FQ(this)))
 //  override def mkdirs : CF[Boolean] = { log ("mkdirs", this); new CTODO (f.mkdirs()) }
   override def rmdir  : CF[Boolean] = {
     log ("rmdir", this)
@@ -93,7 +93,7 @@ class JF (val name:String) extends P {
       new CTODO (f.delete())
     }
   
-  override def exists : CF[Boolean] = new CTODO (f.exists())
+  override def exists : Boolean = f.exists()
   
   override def toAbsolute : P = P(f.getAbsolutePath)
   
@@ -129,7 +129,7 @@ trait CF[A] {
 trait CF1[A] extends CF[A] {
   var fq : FQ = NOFQ
   
-  def apply (s:String) : CF[A] = { fq = FQ(s); this }
+  def apply (s:String) : CF[A] = { fq = FQ(s); new CDO(this) }
   def on (s:String) = apply(s)
   
 }
@@ -137,7 +137,7 @@ trait CF1[A] extends CF[A] {
 /* command with two parameters */
 trait CF2[A] extends CF[A] {
   var psrc, pdest = ""
-  def apply (src:String, dest:String) : CF[A] = {psrc=src; pdest=dest; this }
+  def apply (src:String, dest:String) : CF[A] = {psrc=src; pdest=dest; new CDO(this) }
   def on (src:String, dest:String) = apply (src, dest)
 }
 
@@ -194,6 +194,7 @@ class CDone[A] (val result : A) extends CF[A] {
 }
 
 case class CTODO[A] (_result : A) extends CDone[A] (_result) 
+case class CDO[A] (_cmd : CF[A]) extends CDone[A] (_cmd.get) 
 case class CTODO1[A] (_result : A) extends CDone[A] (_result) with CF1[A] {
   override def get = _result
 }

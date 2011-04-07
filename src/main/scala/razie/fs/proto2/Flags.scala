@@ -1,5 +1,6 @@
-package razie.fs.proto1
+package razie.fs.proto2
 
+/** is this the best way to implement ths flags or not? */
 trait BaseFlag {
   val f:String
   override def toString = f

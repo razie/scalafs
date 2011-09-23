@@ -1,6 +1,6 @@
 package razie.fs.proto1
 
-object Sf1App extends Application {
+object Sf1App extends App {
   import DefaultShell._
   import Flags._
     

@@ -69,7 +69,6 @@ trait P extends FP {
 
 /** default wrapper over a java.io.File */
 class JF (val name:String) extends P {
-  import scala.collection.JavaConversions._
   
   val f = new java.io.File (name)
   
@@ -118,7 +117,7 @@ trait CF[A] {
   
   def | [B] (right:CF[B]) : CF[B] = new Pipe[A,B] (this, right)
 
-  //  def > (dest:P) : CF[Unit] = new PipeToFile[A,Unit] (this, dest)
+  //def > (dest:P) : CF[Unit] = new PipeToFile[A,Unit] (this, dest)
  
   def get : A
 }
@@ -141,7 +140,7 @@ trait CF2[A] extends CF[A] {
   def on (src:String, dest:String) = apply (src, dest)
 }
 
-class CmdMkdir (q:FQ = NOFQ) extends CF1[Boolean] {
+class CmdMkdir (q:FQ/* = NOFQ*/) extends CF1[Boolean] {
   fq = q
   
   def get : Boolean = { 
@@ -161,7 +160,7 @@ class CmdMkdir (q:FQ = NOFQ) extends CF1[Boolean] {
   }
 }
 
-class CmdMkdirs (q:FQ = NOFQ) extends CmdMkdir (q) {
+class CmdMkdirs (q:FQ/* = NOFQ*/) extends CmdMkdir (q) {
   override def mk (p:P) : Boolean = { 
     log ("mkdirs", p); 
     try {
@@ -184,8 +183,12 @@ class Pipe[A,B] (val left:CF[A], val right:CF[B]) extends CF[B] {
   override def get : B = throw new UnsupportedOperationException
 }
 
+/** pipe the result of an operation to a file */
 class PipeToFile[A] (val left:CF[A], val right:P) extends CF[Unit] {
-  def get : Unit = throw new UnsupportedOperationException
+  def get : Unit = { // TODO 1-1 this is too stupid
+    val x = left.get
+    
+  }
 }
 
 class CDone[A] (val result : A) extends CF[A] {
@@ -233,7 +236,7 @@ trait Shell {
   def iecho (expr:String) : CF[Content] = echo (expr)
   def echo (expr:String) : CF[Content] // TODO expr 
   
-  def mkdir  = new CmdMkdir ()
+  def mkdir  = new CmdMkdir (NOFQ)
   def rmdir  (s:String) = s.rmdir
   def rm     (p:String) = p.rm   
   def exists (s:String) = toP(s).exists

@@ -49,66 +49,66 @@ This is a good use case, to create distributions from an SBT project.
 
 To use it, do not use addSbtPlugin(...) , but rather this line to the <myproject>/project/plugins.sbt
 
-   libraryDependencies += "com.razie" % "scalafs_2.9.1" % "0.3-SNAPSHOT"
+    libraryDependencies += "com.razie" % "scalafs_2.9.1" % "0.3-SNAPSHOT"
 
 Reason being, this is used just as a library, it doesn't do any sbt magic.
 
 Then, in your project's settings add say a 'dist' command:
 
-   commands += distCommand,
+    commands += distCommand,
 
 as in
 
-   import sbt._
-   import Keys._
+    import sbt._
+    import Keys._
 
-   object HelloBuild extends Build {
-
-     lazy val project = Project (
-       "project",
-       file ("."),
-       settings = Defaults.defaultSettings ++ Seq(
-         organization := "hello",
-         name         := "world",
-         version      := "1.0-SNAPSHOT",
-         scalaVersion := "2.9.0-1",
-
-         commands += distCommand,
-
-       )
-     )
-   }
+    object HelloBuild extends Build {
+    
+      lazy val project = Project (
+        "project",
+        file ("."),
+        settings = Defaults.defaultSettings ++ Seq(
+          organization := "hello",
+          name         := "world",
+          version      := "1.0-SNAPSHOT",
+          scalaVersion := "2.9.0-1",
+     
+          commands += distCommand,
+     
+        )
+      )
+    }
 
 Now you can finally define the actual command implementation that moves files around:
 
-   import razie.fs.proto2._
-   import razie.fs.proto2.DefaultShell._
- 
-   def distCommand = Command.command ("dist") { state =>
-     val baseDir = FP apply Project.extract(state).get(baseDirectory) // get project's directory
-     val d       = baseDir / "mdist"
- 
-     out << "Creating distribution in %s \n".format(d.path)
- 
-     val ms = baseDir / "mutant/src/main/resources"
-     val as = baseDir / "agent/src/main/resources"
-     val es = baseDir / "media/src/main/resources"
- 
-     // prepare directory structure
-
-     "lib plugins cfg user" split " " map (d / _) foreach (_.mkdirs)
-     "lib plugins cfg" split " " map (d / "upgrade" / _) foreach (_.mkdirs)
- 
-     // copy files
- 
-     d << as / "cfg" / "agent.xml"
-     d << as / "cfg" / "assets.xml"
-     d << as / "cfg" / "template_agent.xml"
-     d << es / "cfg" / "media.xml"
-     d << ms / "cfg" / "user.xml"
- 
-     state // how to indicate success/failure?
-     }
+    import razie.fs.proto2._
+    import razie.fs.proto2.DefaultShell._
+      
+    def distCommand = Command.command ("dist") { state =>
+      val baseDir = FP apply Project.extract(state).get(baseDirectory) // get project's directory
+      val d       = baseDir / "mdist"
+      
+      out << "Creating distribution in %s \n".format(d.path)
+      
+      val ms = baseDir / "mutant/src/main/resources"
+      val as = baseDir / "agent/src/main/resources"
+      val es = baseDir / "media/src/main/resources"
+      
+      // prepare directory structure
+     
+      "lib plugins cfg user" split " " map (d / _) foreach (_.mkdirs)
+      "lib plugins cfg" split " " map (d / "upgrade" / _) foreach (_.mkdirs)
+      
+      // copy files
+      
+      d << as / "cfg" / "agent.xml"
+      d << as / "cfg" / "assets.xml"
+      d << as / "cfg" / "template_agent.xml"
+      d << es / "cfg" / "media.xml"
+      d << ms / "cfg" / "user.xml"
+      
+      state // how to indicate success/failure?
+      }
 
 This works with sbt 0.10+
 

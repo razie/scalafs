@@ -1,6 +1,8 @@
 
 name := "scalafs"
 
+// sbtPlugin := true
+
 retrieveManaged := true // copy libs in lib_managed
 
 publishMavenStyle := true

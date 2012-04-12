@@ -1,7 +1,7 @@
 package razie.fs.proto2
 
 class Logger {
-  def log (msg:String) = println ("LOG " + msg)
+  def log (msg:String) = out <<< ("LOG " + msg)
 }
 
 object log {

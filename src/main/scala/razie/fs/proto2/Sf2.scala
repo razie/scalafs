@@ -4,12 +4,23 @@ import java.io._
 import com.razie.pub.util.Files
 import java.net.MalformedURLException
 
-  object O { // TODO 2.8.1
-    def apply[A](x: A): Option[A] = if (x == null) None else Some(x)
-  }
+object O { // TODO 2.8.1
+  def apply[A](x: A): Option[A] = if (x == null) None else Some(x)
+}
+
+// screw println () 
+
+class Indented(val indent: String) {
+  def <<(s: Any) = { print (s.toString()); this }
+  def <<<(s: Any) = { println (indent + s.toString()); this }
+}
+object out extends Indented("") {
+  def indented(indent: String) = new Indented(indent)
+  def + (indent: String) = new Indented(indent)
+}
 
 // abstract actions on a path/file
-trait FPBase {
+trait FPBase { self : FP =>
   def mkdir: CF[Boolean]
   def mkdirs: CF[Boolean]
   def rmdir: CF[Boolean]
@@ -19,7 +30,8 @@ trait FPBase {
 
   def renameTo(o: FP): CF[Boolean]
   def copyTo(o: FP): CF[Boolean]
-  def ->(other: FP) = copyTo(other)
+  def >> (other: FP) = { println ("------------>"); copyTo(other)}
+  def << (other: FP) = other >> this
 
   def ls: CF[List[FP]] = ls(".*")
   def ls(pat: String, flags: LsFlag*): CF[List[FP]]
@@ -41,6 +53,12 @@ trait FP extends FPBase {
   def sub(subDir: String): FP
 
   def /(s: String) = sub(s)
+}
+
+// basic abstract File. java.File + conversion from String
+object FP {
+  def apply(s: String): FP = new JF(s) // TODO fs specific
+  def apply(f: File): FP = new JF(f) // TODO fs specific
 }
 
 // identifies one or more files or paths
@@ -103,12 +121,6 @@ case class PatFQ(val pattern: String) extends FQ {
 
 class Cmd
 
-// basic abstract File. java.File + conversion from String
-object FP {
-  def apply(s: String): FP = new JF(s) // TODO fs specific
-  def apply(f: File): FP = new JF(f) // TODO fs specific
-}
-
 /** default wrapper over a java.io.File */
 class JF(val f: File) extends FP {
   //  val f = if (_f != null) _f else new File("") // TODO what the heck if f is null?
@@ -134,8 +146,8 @@ class JF(val f: File) extends FP {
   override def copyTo(other: FP): CF[Boolean] = new CmdCp(FQ(this), other)
 
   override def sub(subDir: String): FP = {
-    assert(f.isDirectory)
-    FP(this.name + (if (subDir.startsWith("/") || subDir.startsWith("\\")) "" else "/") + subDir)
+    // CANNOT assert since paths can be prepared before dirs created... assert(f.isDirectory, f.getAbsolutePath())
+    FP(this.path + (if (subDir.startsWith("/") || subDir.startsWith("\\")) "" else "/") + subDir)
   }
 
   override def ls(pat: String, flags: LsFlag*): CF[List[FP]] =
